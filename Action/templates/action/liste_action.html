@@ -1,0 +1,49 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %} Liste des actions {% endblock %}</title>
+  </head>
+  <body>
+    {% block content %}
+        <div class="content">
+          <div class="sous-container1">
+            <div class="logo">PTA</div>
+            <nav>
+              <ul>
+                <li><a href="#">Tâches</a></li>
+                <li><a href="#">Actions</a></li>
+                <li><a href="#">Contact</a></li>
+              </ul>
+            </nav>
+            <div class="btn_deconnexion">
+              <ul>
+                <li><a href="#">Déconnexion</a></li>
+              </ul>
+            </div>
+          </div>
+          <div class="sous-container2">
+            <div class="sous-container2-haut">
+              <h2>TABLEAU DE BORD</h2>
+              <div class="profil">
+                <img src="{% static 'images/profil.png' %}" alt="Profil">
+                <p>Nom de l'utilisateur</p>
+              </div>
+            </div>
+            <h3>Liste des actions</h3>
+            <div class="elements">
+              <a href="#"><button class="btn-ajouter">Ajouter une action</button></a>
+              <div class="recherche">
+                <input type="text" placeholder="Rechercher...">
+                <button class="btn-rechercher">Rechercher</button>
+              </div>
+            </div>
+          </div>
+        </div>
+    {% endblock %}
+  </body>
+</html>
