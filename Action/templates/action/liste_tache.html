@@ -1,0 +1,252 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}PTA - Niveau 3 : Tâches de {{ activite.nom }}{% endblock %}
+
+{% block content %}
+<div class="content">
+  <!-- Sidebar de navigation -->
+  <div class="sous-container1">
+    <div class="logo">
+      <i class="bi bi-diagram-3-fill me-2 text-primary"></i> PTA
+    </div>
+    <nav>
+      <ul>
+        <li><a href="{% url 'liste_action' %}"><i class="bi bi-collection-fill me-1"></i> Actions</a></li>
+      </ul>
+    </nav>
+    <div class="btn_deconnexion">
+      <ul>
+        <li><a href="{% url 'deconnexion' %}"><i class="bi bi-box-arrow-right me-1"></i> Déconnexion</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Zone Principale -->
+  <div class="sous-container2 p-4" style="overflow-y: auto;">
+    <div class="sous-container2-haut mb-4">
+      <h2>TABLEAU DE BORD</h2>
+      <div class="profil">
+        <img src="{% static 'images/profil.png' %}" alt="Profil" onerror="this.src='https://ui-avatars.com/api/?name={{ request.user.username }}&background=0D6EFD&color=fff'">
+        <p class="mb-0 ms-2 fw-semibold">{{ request.user.get_full_name|default:request.user.username }}</p>
+      </div>
+    </div>
+
+    <!-- Fil d'Ariane (Breadcrumb 3 niveaux) -->
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb bg-white p-3 rounded shadow-sm">
+        <li class="breadcrumb-item">
+          <a href="{% url 'liste_action' %}" class="text-decoration-none text-primary">
+            <i class="bi bi-folder-fill me-1"></i> Actions
+          </a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="{% url 'liste_activites' action.id %}" class="text-decoration-none text-primary">
+            <i class="bi bi-folder2-open me-1"></i> Action: {{ action.nom }}
+          </a>
+        </li>
+        <li class="breadcrumb-item active fw-bold text-dark" aria-current="page">
+          <i class="bi bi-check2-square me-1"></i> Activité: {{ activite.nom }} (Niveau 3)
+        </li>
+      </ol>
+    </nav>
+
+    <!-- Messages Flash -->
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm" role="alert">
+          <i class="bi bi-info-circle-fill me-2"></i> {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <!-- Carte récapitulative de l'Activité parente -->
+    <div class="card bg-white border-start border-4 border-success shadow-sm mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h4 class="card-title fw-bold text-success mb-1">
+              <i class="bi bi-layers me-2"></i>Activité : {{ activite.nom }}
+            </h4>
+            <p class="card-text text-muted mb-0">
+              <span class="fw-semibold text-dark">Action parente:</span> {{ action.nom }} | {{ activite.description|default:"Pas de description" }}
+            </p>
+          </div>
+          <div>
+            <span class="badge bg-info text-dark px-3 py-2 me-2">Statut: {{ activite.get_statut_display }}</span>
+            <span class="badge bg-dark px-3 py-2">{{ taches.count }} tâche{{ taches.count|pluralize }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- En-tête et Bouton Ajouter -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3 class="mb-0 text-dark"><i class="bi bi-check2-all me-2"></i>Tâches de l'Activité</h3>
+      <div>
+        <a href="{% url 'liste_activites' action.id %}" class="btn btn-outline-secondary me-2">
+          <i class="bi bi-arrow-left"></i> Retour aux Activités
+        </a>
+        <button type="button" class="btn btn-warning text-dark shadow-sm" data-bs-toggle="modal" data-bs-target="#ajouterTacheModal">
+          <i class="bi bi-plus-circle-fill me-1"></i> Créer une Tâche
+        </button>
+      </div>
+    </div>
+
+    <!-- Barre de recherche pour les Tâches -->
+    <div class="mb-4">
+      <form method="GET" action="{% url 'liste_taches' activite.id %}" class="row g-2">
+        <div class="col-md-10">
+          <div class="input-group shadow-sm">
+            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" name="q" id="recherche" value="{{ query }}" placeholder="Rechercher une tâche par nom ou description..." class="form-control border-start-0">
+          </div>
+        </div>
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-outline-warning text-dark w-100"><i class="bi bi-funnel"></i> Filtrer</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Tableau d'affichage des Tâches -->
+    <div class="card shadow-sm border-0">
+      <div class="table-responsive rounded">
+        {% if taches %}
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-dark">
+              <tr>
+                <th style="width: 70px;">N°</th>
+                <th>Nom de la Tâche</th>
+                <th>Description</th>
+                <th style="width: 130px;">Priorité</th>
+                <th style="width: 140px;">Statut</th>
+                <th style="width: 250px;" class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for tache in taches %}
+                <tr class="data-row" data-nom="{{ tache.nom|lower }}" data-desc="{{ tache.description|default:''|lower }}">
+                  <td class="text-muted fw-bold">#{{ forloop.counter }}</td>
+                  <td class="fw-bold text-dark">{{ tache.nom }}</td>
+                  <td class="text-muted small">{{ tache.description|default:"Aucune description"|truncatewords:10 }}</td>
+                  <td>
+                    {% if tache.priorite == 'HAUTE' %}
+                      <span class="badge bg-danger text-white px-2 py-1"><i class="bi bi-exclamation-triangle me-1"></i> Haute</span>
+                    {% elif tache.priorite == 'MOYENNE' %}
+                      <span class="badge bg-warning text-dark px-2 py-1"><i class="bi bi-dash-circle me-1"></i> Moyenne</span>
+                    {% else %}
+                      <span class="badge bg-secondary text-white px-2 py-1"><i class="bi bi-arrow-down-circle me-1"></i> Basse</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if tache.statut == 'NON_REALISE' %}
+                      <span class="badge bg-danger-subtle text-danger px-3 py-2 border border-danger-subtle rounded-pill">Non réalisé</span>
+                    {% elif tache.statut == 'EN_COURS' %}
+                      <span class="badge bg-warning-subtle text-warning-emphasis px-3 py-2 border border-warning-subtle rounded-pill">En cours</span>
+                    {% else %}
+                      <span class="badge bg-success-subtle text-success px-3 py-2 border border-success-subtle rounded-pill">Réalisé</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-end">
+                    <!-- Bouton Voir Détails Modal -->
+                    <button type="button" class="btn btn-sm btn-info text-white me-1" data-bs-toggle="modal" data-bs-target="#detailModalTache{{ tache.id }}" title="Détails">
+                      <i class="bi bi-eye"></i> Détails
+                    </button>
+
+                    <!-- Bouton Modifier -->
+                    <a href="{% url 'modifier_tache' tache.id %}" class="btn btn-sm btn-warning text-dark me-1" title="Modifier">
+                      <i class="bi bi-pencil-square"></i>
+                    </a>
+
+                    <!-- Bouton Supprimer -->
+                    <a href="{% url 'supprimer_tache' tache.id %}" class="btn btn-sm btn-danger" title="Supprimer">
+                      <i class="bi bi-trash"></i>
+                    </a>
+                  </td>
+                </tr>
+
+                <!-- MODAL DÉTAILS TÂCHE -->
+                <div class="modal fade" id="detailModalTache{{ tache.id }}" tabindex="-1" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                      <div class="modal-header bg-info text-white">
+                        <h5 class="modal-title"><i class="bi bi-info-circle me-2"></i>Détails de la Tâche #{{ forloop.counter }}</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        <h4 class="fw-bold">{{ tache.nom }}</h4>
+                        <p class="text-muted"><strong>Action:</strong> {{ action.nom }} | <strong>Activité:</strong> {{ activite.nom }}</p>
+                        <p class="text-muted">{{ tache.description|default:"Pas de description fournie." }}</p>
+                        <hr>
+                        <div class="row">
+                          <div class="col-4">
+                            <strong>Priorité:</strong> {{ tache.get_priorite_display }}
+                          </div>
+                          <div class="col-4">
+                            <strong>Statut:</strong> {{ tache.get_statut_display }}
+                          </div>
+                          <div class="col-4">
+                            <strong>Créée le:</strong> {{ tache.date_creation|date:"d/m/Y" }}
+                          </div>
+                        </div>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <div class="p-5 text-center bg-light">
+            <i class="bi bi-inbox text-muted fs-1 d-block mb-3"></i>
+            <p class="text-muted mb-0">Aucune tâche pour cette activité. Cliquez sur <strong>Créer une Tâche</strong> pour en ajouter une.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL AJOUTER TÂCHE -->
+<div class="modal fade" id="ajouterTacheModal" tabindex="-1" aria-labelledby="ajouterTacheModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="POST" action="{% url 'liste_taches' activite.id %}">
+        {% csrf_token %}
+        <div class="modal-header bg-warning text-dark">
+          <h5 class="modal-title" id="ajouterTacheModalLabel"><i class="bi bi-plus-circle me-2"></i>Nouvelle Tâche pour "{{ activite.nom }}"</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-bold">Nom de la Tâche <span class="text-danger">*</span></label>
+            {{ form.nom }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Description</label>
+            {{ form.description }}
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-bold">Priorité</label>
+              {{ form.priorite }}
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-bold">Statut</label>
+              {{ form.statut }}
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-warning text-dark"><i class="bi bi-check-circle me-1"></i> Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

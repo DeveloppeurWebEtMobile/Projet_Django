@@ -1,0 +1,44 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}PTA - Nouveau mot de passe{% endblock %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center min-vh-100 py-5">
+  <div class="card shadow-lg border-0 rounded-4 p-4" style="max-width: 450px; width: 100%;">
+    <div class="text-center mb-4">
+      <div class="display-5 text-primary mb-2">
+        <i class="bi bi-shield-lock-fill"></i>
+      </div>
+      <h2 class="fw-bold text-dark">Nouveau mot de passe</h2>
+      <p class="text-muted small">Saisissez votre nouveau mot de passe ci-dessous</p>
+    </div>
+
+    {% if validlink %}
+      <form method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label fw-bold small text-secondary">Nouveau mot de passe</label>
+          {{ form.new_password1 }}
+          {% if form.new_password1.errors %}<div class="text-danger small mt-1">{{ form.new_password1.errors }}</div>{% endif %}
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold small text-secondary">Confirmez le nouveau mot de passe</label>
+          {{ form.new_password2 }}
+          {% if form.new_password2.errors %}<div class="text-danger small mt-1">{{ form.new_password2.errors }}</div>{% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm mt-3">
+          <i class="bi bi-check-lg me-1"></i> Réinitialiser le mot de passe
+        </button>
+      </form>
+    {% else %}
+      <div class="alert alert-danger text-center">
+        Le lien de réinitialisation est invalide ou a expiré.
+      </div>
+      <a href="{% url 'password_reset' %}" class="btn btn-outline-primary w-100 mt-2">Demander un nouveau lien</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

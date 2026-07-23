@@ -1,119 +1,216 @@
 {% extends 'base/base.html' %}
 {% load static %}
 
+{% block title %}PTA - Niveau 1 : Liste des Actions{% endblock %}
 
-    {% block content %}
-        <div class="content">
-          <div class="sous-container1">
-            <div class="logo">PTA</div>
-            <nav>
-              <ul>
-                <li><a href="#">Tâches</a></li>
-                <li><a href="#">Actions</a></li>
-                <li><a href="#">Contact</a></li>
-              </ul>
-            </nav>
-            <div class="btn_deconnexion">
-              <ul>
-                <li><a href="#">Déconnexion</a></li>
-              </ul>
-            </div>
-          </div>
-          <div class="sous-container2">
-            <div class="sous-container2-haut">
-              <h2>TABLEAU DE BORD</h2>
-              <div class="profil">
-                <img src="{% static 'images/profil.png' %}" alt="Profil">
-                <p>Nom de l'utilisateur</p>
-              </div>
-            </div>
-            <h3 class="mb-4 text-dark">Liste des actions</h3>
+{% block content %}
+<div class="content">
+  <!-- Sidebar de navigation -->
+  <div class="sous-container1">
+    <div class="logo">
+      <i class="bi bi-diagram-3-fill me-2 text-primary"></i> PTA
+    </div>
+    <nav>
+      <ul>
+        <li class="active"><a href="{% url 'liste_action' %}"><i class="bi bi-collection-fill me-1"></i> Actions</a></li>
+      </ul>
+    </nav>
+    <div class="btn_deconnexion">
+      <ul>
+        <li><a href="{% url 'deconnexion' %}"><i class="bi bi-box-arrow-right me-1"></i> Déconnexion</a></li>
+      </ul>
+    </div>
+  </div>
 
-             <!-- Barre de Recherche en temps réel -->
-            <div class="mb-4">
-                <div class="input-group">
-                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
-                    <input type="text" id="recherche" placeholder="Rechercher une action par son nom..." class="form-control border-start-0 ps-0">
-                </div>
-            </div>
-            
-            <!-- Formulaire pour ajouter une action en ligne (Plus compact et pro) -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-body bg-light">
-                    <a href="{% url 'ajouter_action' %}" class="btn btn-primary mb-3">
-                        <i class="bi bi-plus-circle"></i> Ajouter une nouvelle action
-                    </a>
-                    <form method="POST" class="needs-validation" novalidate>
-                        {% csrf_token %}
-                        <div class="row g-3 align-items-end">
-                            <div class="col-md-7">
-                                <label class="form-label small text-muted">Nom de l'action</label>
-                                {{ form.nom }}
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label small text-muted">Statut initial</label>
-                                {{ form.statut }}
-                            </div>
-                            <div class="col-md-2">
-                                <button type="submit" class="btn btn-primary w-100">
-                                    <i class="bi bi-plus-circle"></i> Ajouter
-                                </button>
-                            </div>
-                        </div>
-                        {% if form.errors %}
-                            <div class="alert alert-danger mt-3 mb-0 py-2 small">
-                                {{ form.errors }}
-                            </div>
-                        {% endif %}
-                    </form>
-                </div>
-            </div>
+  <!-- Zone Principale -->
+  <div class="sous-container2 p-4" style="overflow-y: auto;">
+    <div class="sous-container2-haut mb-4">
+      <h2>TABLEAU DE BORD</h2>
+      <div class="profil">
+        <img src="{% static 'images/profil.png' %}" alt="Profil" onerror="this.src='https://ui-avatars.com/api/?name={{ request.user.username }}&background=0D6EFD&color=fff'">
+        <p class="mb-0 ms-2 fw-semibold">{{ request.user.get_full_name|default:request.user.username }}</p>
+      </div>
+    </div>
 
-            <!-- Tableau d'affichage -->
-            <div class="card shadow-sm border-0">
-                <div class="table-responsive rounded">
-                    {% if actions %}
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th style="width: 80px;">ID</th>
-                                    <th>Nom de l'action</th>
-                                    <th style="width: 180px;">Statut</th>
-                                    <th style="width: 220px;" class="text-end">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tableau-corps">
-                                {% for action in actions %}
-                                    <tr class="action-row" data-nom="{{ action.nom|lower }}">
-                                        <td class="text-muted fw-bold">#{{ action.id }}</td>
-                                        <td class="fw-medium text-dark">{{ action.nom }}</td>
-                                        <td>
-                                            <!-- Correspondance avec les nouvelles clés du modèle -->
-                                            {% if action.statut == 'NON_REALISE' %}
-                                                <span class="badge bg-danger-subtle text-danger px-3 py-2 border border-danger-subtle rounded-pill">Non réalisé</span>
-                                            {% elif action.statut == 'EN_COURS' %}
-                                                <span class="badge bg-warning-subtle text-warning-dark px-3 py-2 border border-warning-subtle rounded-pill">En cours</span>
-                                            {% else %}
-                                                <span class="badge bg-success-subtle text-success px-3 py-2 border border-success-subtle rounded-pill">Réalisé</span>
-                                            {% endif %}
-                                        </td>
-                                        <td class="text-end">
-                                            <a href="#" class="btn btn-sm btn-outline-warning me-1">Modifier</a>
-                                            <a href="#" class="btn btn-sm btn-outline-danger">Supprimer</a>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    {% else %}
-                        <div class="p-5 text-center bg-light">
-                            <p class="text-muted mb-0">Aucune action pour le moment. Commencez par en ajouter une !</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
+    <!-- Fil d'Ariane (Breadcrumb) -->
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb bg-white p-3 rounded shadow-sm">
+        <li class="breadcrumb-item active fw-bold text-primary" aria-current="page">
+          <i class="bi bi-folder-fill me-1"></i> Actions (Niveau 1)
+        </li>
+      </ol>
+    </nav>
+
+    <!-- Messages Flash -->
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm" role="alert">
+          <i class="bi bi-info-circle-fill me-2"></i> {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <!-- En-tête et Bouton Ajouter -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3 class="mb-0 text-dark"><i class="bi bi-card-checklist me-2"></i>Liste des Actions</h3>
+      <button type="button" class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#ajouterActionModal">
+        <i class="bi bi-plus-circle-fill me-1"></i> Créer une Action
+      </button>
+    </div>
+
+    <!-- Barre de recherche -->
+    <div class="mb-4">
+      <form method="GET" action="{% url 'liste_action' %}" class="row g-2">
+        <div class="col-md-10">
+          <div class="input-group shadow-sm">
+            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" name="q" id="recherche" value="{{ query }}" placeholder="Rechercher une action par nom ou description..." class="form-control border-start-0">
           </div>
         </div>
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-funnel"></i> Filtrer</button>
+        </div>
+      </form>
+    </div>
 
-        
-    {% endblock %}
+    <!-- Tableau d'affichage des Actions -->
+    <div class="card shadow-sm border-0">
+      <div class="table-responsive rounded">
+        {% if actions %}
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-dark">
+              <tr>
+                <th style="width: 70px;">N°</th>
+                <th>Nom de l'Action</th>
+                <th>Description</th>
+                <th style="width: 140px;">Statut</th>
+                <th style="width: 130px;">Activités</th>
+                <th style="width: 320px;" class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for action in actions %}
+                <tr class="data-row" data-nom="{{ action.nom|lower }}" data-desc="{{ action.description|default:''|lower }}">
+                  <td class="text-muted fw-bold">#{{ forloop.counter }}</td>
+                  <td class="fw-bold text-dark">
+                    <a href="{% url 'liste_activites' action.id %}" class="text-decoration-none text-dark">
+                      {{ action.nom }}
+                    </a>
+                  </td>
+                  <td class="text-muted small">{{ action.description|default:"Aucune description"|truncatewords:10 }}</td>
+                  <td>
+                    {% if action.statut == 'NON_REALISE' %}
+                      <span class="badge bg-danger-subtle text-danger px-3 py-2 border border-danger-subtle rounded-pill">Non réalisé</span>
+                    {% elif action.statut == 'EN_COURS' %}
+                      <span class="badge bg-warning-subtle text-warning-emphasis px-3 py-2 border border-warning-subtle rounded-pill">En cours</span>
+                    {% else %}
+                      <span class="badge bg-success-subtle text-success px-3 py-2 border border-success-subtle rounded-pill">Réalisé</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <span class="badge bg-secondary rounded-pill fs-6 px-3">
+                      {{ action.total_activites }} activité{{ action.total_activites|pluralize }}
+                    </span>
+                  </td>
+                  <td class="text-end">
+                    <!-- Bouton Voir les Activités -->
+                    <a href="{% url 'liste_activites' action.id %}" class="btn btn-sm btn-success me-1" title="Voir les Activités associées">
+                      <i class="bi bi-folder-symlink me-1"></i> Activités
+                    </a>
+                    
+                    <!-- Bouton Voir Détails Modal -->
+                    <button type="button" class="btn btn-sm btn-info text-white me-1" data-bs-toggle="modal" data-bs-target="#detailModal{{ action.id }}" title="Détails">
+                      <i class="bi bi-eye"></i>
+                    </button>
+
+                    <!-- Bouton Modifier Modal -->
+                    <a href="{% url 'modifier_action' action.id %}" class="btn btn-sm btn-warning text-dark me-1" title="Modifier">
+                      <i class="bi bi-pencil-square"></i>
+                    </a>
+
+                    <!-- Bouton Supprimer Modal -->
+                    <a href="{% url 'supprimer_action' action.id %}" class="btn btn-sm btn-danger" title="Supprimer">
+                      <i class="bi bi-trash"></i>
+                    </a>
+                  </td>
+                </tr>
+
+                <!-- MODAL DÉTAILS ACTION -->
+                <div class="modal fade" id="detailModal{{ action.id }}" tabindex="-1" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                      <div class="modal-header bg-info text-white">
+                        <h5 class="modal-title"><i class="bi bi-info-circle me-2"></i>Détails de l'Action #{{ forloop.counter }}</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        <h4 class="fw-bold">{{ action.nom }}</h4>
+                        <p class="text-muted">{{ action.description|default:"Pas de description fournie." }}</p>
+                        <hr>
+                        <div class="row">
+                          <div class="col-6">
+                            <strong>Statut:</strong> {{ action.get_statut_display }}
+                          </div>
+                          <div class="col-6">
+                            <strong>Créée le:</strong> {{ action.date_creation|date:"d/m/Y H:i" }}
+                          </div>
+                        </div>
+                        <div class="mt-3">
+                          <strong>Nombre d'activités associées:</strong> {{ action.total_activites }}
+                        </div>
+                      </div>
+                      <div class="modal-footer">
+                        <a href="{% url 'liste_activites' action.id %}" class="btn btn-success">Accéder aux Activités</a>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <div class="p-5 text-center bg-light">
+            <i class="bi bi-inbox text-muted fs-1 d-block mb-3"></i>
+            <p class="text-muted mb-0">Aucune action trouvée. Cliquez sur <strong>Créer une Action</strong> pour commencer.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL AJOUTER ACTION -->
+<div class="modal fade" id="ajouterActionModal" tabindex="-1" aria-labelledby="ajouterActionModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="POST" action="{% url 'liste_action' %}">
+        {% csrf_token %}
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title" id="ajouterActionModalLabel"><i class="bi bi-plus-circle me-2"></i>Nouvelle Action</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-bold">Nom de l'Action <span class="text-danger">*</span></label>
+            {{ form.nom }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Description</label>
+            {{ form.description }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Statut</label>
+            {{ form.statut }}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle me-1"></i> Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

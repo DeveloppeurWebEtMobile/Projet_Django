@@ -1,0 +1,245 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}PTA - Niveau 2 : Activités de {{ action.nom }}{% endblock %}
+
+{% block content %}
+<div class="content">
+  <!-- Sidebar de navigation -->
+  <div class="sous-container1">
+    <div class="logo">
+      <i class="bi bi-diagram-3-fill me-2 text-primary"></i> PTA
+    </div>
+    <nav>
+      <ul>
+        <li><a href="{% url 'liste_action' %}"><i class="bi bi-collection-fill me-1"></i> Actions</a></li>
+      </ul>
+    </nav>
+    <div class="btn_deconnexion">
+      <ul>
+        <li><a href="{% url 'deconnexion' %}"><i class="bi bi-box-arrow-right me-1"></i> Déconnexion</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Zone Principale -->
+  <div class="sous-container2 p-4" style="overflow-y: auto;">
+    <div class="sous-container2-haut mb-4">
+      <h2>TABLEAU DE BORD</h2>
+      <div class="profil">
+        <img src="{% static 'images/profil.png' %}" alt="Profil" onerror="this.src='https://ui-avatars.com/api/?name={{ request.user.username }}&background=0D6EFD&color=fff'">
+        <p class="mb-0 ms-2 fw-semibold">{{ request.user.get_full_name|default:request.user.username }}</p>
+      </div>
+    </div>
+
+    <!-- Fil d'Ariane (Breadcrumb 2 niveaux) -->
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb bg-white p-3 rounded shadow-sm">
+        <li class="breadcrumb-item">
+          <a href="{% url 'liste_action' %}" class="text-decoration-none text-primary">
+            <i class="bi bi-folder-fill me-1"></i> Actions
+          </a>
+        </li>
+        <li class="breadcrumb-item active fw-bold text-dark" aria-current="page">
+          <i class="bi bi-folder2-open me-1"></i> Action: {{ action.nom }} (Niveau 2)
+        </li>
+      </ol>
+    </nav>
+
+    <!-- Messages Flash -->
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm" role="alert">
+          <i class="bi bi-info-circle-fill me-2"></i> {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <!-- Carte récapitulative de l'Action parente -->
+    <div class="card bg-white border-start border-4 border-primary shadow-sm mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h4 class="card-title fw-bold text-primary mb-1">
+              <i class="bi bi-bookmark-star me-2"></i>Action : {{ action.nom }}
+            </h4>
+            <p class="card-text text-muted mb-0">{{ action.description|default:"Pas de description" }}</p>
+          </div>
+          <div>
+            <span class="badge bg-info text-dark px-3 py-2 me-2">Statut: {{ action.get_statut_display }}</span>
+            <span class="badge bg-secondary px-3 py-2">{{ action.total_activites }} activité{{ action.total_activites|pluralize }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- En-tête et Bouton Ajouter -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3 class="mb-0 text-dark"><i class="bi bi-list-task me-2"></i>Activités de l'Action</h3>
+      <div>
+        <a href="{% url 'liste_action' %}" class="btn btn-outline-secondary me-2">
+          <i class="bi bi-arrow-left"></i> Retour aux Actions
+        </a>
+        <button type="button" class="btn btn-success shadow-sm" data-bs-toggle="modal" data-bs-target="#ajouterActiviteModal">
+          <i class="bi bi-plus-circle-fill me-1"></i> Créer une Activité
+        </button>
+      </div>
+    </div>
+
+    <!-- Barre de recherche pour les Activités -->
+    <div class="mb-4">
+      <form method="GET" action="{% url 'liste_activites' action.id %}" class="row g-2">
+        <div class="col-md-10">
+          <div class="input-group shadow-sm">
+            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" name="q" id="recherche" value="{{ query }}" placeholder="Rechercher une activité par nom ou description..." class="form-control border-start-0">
+          </div>
+        </div>
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-outline-success w-100"><i class="bi bi-funnel"></i> Filtrer</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Tableau d'affichage des Activités -->
+    <div class="card shadow-sm border-0">
+      <div class="table-responsive rounded">
+        {% if activites %}
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-dark">
+              <tr>
+                <th style="width: 70px;">N°</th>
+                <th>Nom de l'Activité</th>
+                <th>Description</th>
+                <th style="width: 140px;">Statut</th>
+                <th style="width: 130px;">Tâches</th>
+                <th style="width: 320px;" class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for activite in activites %}
+                <tr class="data-row" data-nom="{{ activite.nom|lower }}" data-desc="{{ activite.description|default:''|lower }}">
+                  <td class="text-muted fw-bold">#{{ forloop.counter }}</td>
+                  <td class="fw-bold text-dark">
+                    <a href="{% url 'liste_taches' activite.id %}" class="text-decoration-none text-dark">
+                      {{ activite.nom }}
+                    </a>
+                  </td>
+                  <td class="text-muted small">{{ activite.description|default:"Aucune description"|truncatewords:10 }}</td>
+                  <td>
+                    {% if activite.statut == 'NON_REALISE' %}
+                      <span class="badge bg-danger-subtle text-danger px-3 py-2 border border-danger-subtle rounded-pill">Non réalisé</span>
+                    {% elif activite.statut == 'EN_COURS' %}
+                      <span class="badge bg-warning-subtle text-warning-emphasis px-3 py-2 border border-warning-subtle rounded-pill">En cours</span>
+                    {% else %}
+                      <span class="badge bg-success-subtle text-success px-3 py-2 border border-success-subtle rounded-pill">Réalisé</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <span class="badge bg-primary rounded-pill fs-6 px-3">
+                      {{ activite.total_taches }} tâche{{ activite.total_taches|pluralize }}
+                    </span>
+                  </td>
+                  <td class="text-end">
+                    <!-- Bouton Voir les Tâches -->
+                    <a href="{% url 'liste_taches' activite.id %}" class="btn btn-sm btn-primary me-1" title="Voir les Tâches associées">
+                      <i class="bi bi-check2-square me-1"></i> Tâches
+                    </a>
+                    
+                    <!-- Bouton Voir Détails Modal -->
+                    <button type="button" class="btn btn-sm btn-info text-white me-1" data-bs-toggle="modal" data-bs-target="#detailModalAct{{ activite.id }}" title="Détails">
+                      <i class="bi bi-eye"></i>
+                    </button>
+
+                    <!-- Bouton Modifier -->
+                    <a href="{% url 'modifier_activite' activite.id %}" class="btn btn-sm btn-warning text-dark me-1" title="Modifier">
+                      <i class="bi bi-pencil-square"></i>
+                    </a>
+
+                    <!-- Bouton Supprimer -->
+                    <a href="{% url 'supprimer_activite' activite.id %}" class="btn btn-sm btn-danger" title="Supprimer">
+                      <i class="bi bi-trash"></i>
+                    </a>
+                  </td>
+                </tr>
+
+                <!-- MODAL DÉTAILS ACTIVITÉ -->
+                <div class="modal fade" id="detailModalAct{{ activite.id }}" tabindex="-1" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                      <div class="modal-header bg-info text-white">
+                        <h5 class="modal-title"><i class="bi bi-info-circle me-2"></i>Détails de l'Activité #{{ forloop.counter }}</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        <h4 class="fw-bold">{{ activite.nom }}</h4>
+                        <p class="text-muted"><strong>Action parente:</strong> {{ action.nom }}</p>
+                        <p class="text-muted">{{ activite.description|default:"Pas de description fournie." }}</p>
+                        <hr>
+                        <div class="row">
+                          <div class="col-6">
+                            <strong>Statut:</strong> {{ activite.get_statut_display }}
+                          </div>
+                          <div class="col-6">
+                            <strong>Créée le:</strong> {{ activite.date_creation|date:"d/m/Y H:i" }}
+                          </div>
+                        </div>
+                        <div class="mt-3">
+                          <strong>Nombre de tâches associées:</strong> {{ activite.total_taches }}
+                        </div>
+                      </div>
+                      <div class="modal-footer">
+                        <a href="{% url 'liste_taches' activite.id %}" class="btn btn-primary">Accéder aux Tâches</a>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <div class="p-5 text-center bg-light">
+            <i class="bi bi-inbox text-muted fs-1 d-block mb-3"></i>
+            <p class="text-muted mb-0">Aucune activité pour cette action. Cliquez sur <strong>Créer une Activité</strong> pour en ajouter une.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL AJOUTER ACTIVITÉ -->
+<div class="modal fade" id="ajouterActiviteModal" tabindex="-1" aria-labelledby="ajouterActiviteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="POST" action="{% url 'liste_activites' action.id %}">
+        {% csrf_token %}
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title" id="ajouterActiviteModalLabel"><i class="bi bi-plus-circle me-2"></i>Nouvelle Activité pour "{{ action.nom }}"</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-bold">Nom de l'Activité <span class="text-danger">*</span></label>
+            {{ form.nom }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Description</label>
+            {{ form.description }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Statut</label>
+            {{ form.statut }}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-success"><i class="bi bi-check-circle me-1"></i> Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

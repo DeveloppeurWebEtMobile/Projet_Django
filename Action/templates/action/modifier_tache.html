@@ -1,7 +1,7 @@
 {% extends 'base/base.html' %}
 {% load static %}
 
-{% block title %}PTA - Ajouter une Action{% endblock %}
+{% block title %}PTA - Modifier Tâche #{{ tache.id }}{% endblock %}
 
 {% block content %}
 <div class="content">
@@ -31,32 +31,40 @@
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb bg-white p-3 rounded shadow-sm">
         <li class="breadcrumb-item"><a href="{% url 'liste_action' %}">Actions</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Ajouter une Action</li>
+        <li class="breadcrumb-item"><a href="{% url 'liste_activites' tache.activite.action.id %}">Action: {{ tache.activite.action.nom }}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'liste_taches' tache.activite.id %}">Activité: {{ tache.activite.nom }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Modifier Tâche: {{ tache.nom }}</li>
       </ol>
     </nav>
 
-    <div class="card shadow-sm border-0 max-w-600 mx-auto" style="max-width: 650px;">
-      <div class="card-header bg-primary text-white">
-        <h4 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Ajouter une nouvelle Action</h4>
+    <div class="card shadow-sm border-0 mx-auto" style="max-width: 650px;">
+      <div class="card-header bg-warning text-dark">
+        <h4 class="mb-0"><i class="bi bi-pencil-square me-2"></i>Modifier la Tâche #{{ tache.id }}</h4>
       </div>
       <div class="card-body">
-        <form method="POST" action="{% url 'ajouter_action' %}">
+        <form method="POST">
           {% csrf_token %}
           <div class="mb-3">
-            <label class="form-label fw-bold">Nom de l'Action <span class="text-danger">*</span></label>
+            <label class="form-label fw-bold">Nom de la Tâche</label>
             {{ form.nom }}
           </div>
           <div class="mb-3">
             <label class="form-label fw-bold">Description</label>
             {{ form.description }}
           </div>
-          <div class="mb-3">
-            <label class="form-label fw-bold">Statut initial</label>
-            {{ form.statut }}
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-bold">Priorité</label>
+              {{ form.priorite }}
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-bold">Statut</label>
+              {{ form.statut }}
+            </div>
           </div>
           <div class="d-flex justify-content-between mt-4">
-            <a href="{% url 'liste_action' %}" class="btn btn-outline-secondary">Annuler</a>
-            <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle me-1"></i> Enregistrer</button>
+            <a href="{% url 'liste_taches' tache.activite.id %}" class="btn btn-outline-secondary">Annuler</a>
+            <button type="submit" class="btn btn-warning text-dark"><i class="bi bi-check-circle me-1"></i> Mettre à jour</button>
           </div>
         </form>
       </div>

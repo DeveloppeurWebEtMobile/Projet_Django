@@ -1,0 +1,24 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}PTA - Email envoyé{% endblock %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center min-vh-100 py-5">
+  <div class="card shadow-lg border-0 rounded-4 p-4 text-center" style="max-width: 480px; width: 100%;">
+    <div class="display-4 text-success mb-3">
+      <i class="bi bi-envelope-check-fill"></i>
+    </div>
+    <h3 class="fw-bold text-dark mb-2">Vérifiez vos emails</h3>
+    <p class="text-muted small">
+      Nous vous avons envoyé les instructions de réinitialisation de mot de passe par email.
+      Si vous ne le trouvez pas, vérifiez votre dossier de courrier indésirable (Spam).
+    </p>
+    <div class="mt-4">
+      <a href="{% url 'connexion' %}" class="btn btn-primary fw-bold w-100">
+        <i class="bi bi-box-arrow-in-right me-1"></i> Retour à la connexion
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
