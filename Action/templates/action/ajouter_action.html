@@ -1,0 +1,79 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+
+    {% block content %}
+        <div class="content">
+          <div class="sous-container1">
+            <div class="logo">PTA</div>
+            <nav>
+              <ul>
+                <li><a href="#">Tâches</a></li>
+                <li><a href="#">Actions</a></li>
+                <li><a href="#">Contact</a></li>
+              </ul>
+            </nav>
+            <div class="btn_deconnexion">
+              <ul>
+                <li><a href="#">Déconnexion</a></li>
+              </ul>
+            </div>
+          </div>
+          <div class="sous-container2">
+            <div class="sous-container2-haut">
+              <h2>TABLEAU DE BORD</h2>
+              <div class="profil">
+                <img src="{% static 'images/profil.png' %}" alt="Profil">
+                <p>Nom de l'utilisateur</p>
+              </div>
+            </div>
+            <h3 class="mb-4 text-dark">Liste des actions</h3>
+
+            <!-- Formulaire pour ajouter une action -->
+            <!-- Formulaire pour ajouter une action avec des inputs HTML bruts -->
+            <div class="card shadow-sm mb-4">
+              <div class="card-body bg-light">
+                <h5 class="card-title mb-3 fw-bold text-secondary">Ajouter une nouvelle action</h5>
+                    
+                  <form method="POST" action="">
+                    {% csrf_token %}
+                      <div class="row g-3 align-items-end">
+                        <!-- Input texte pour le Nom de l'action -->
+                        <div class="col-md-7">
+                          <label for="id_nom" class="form-label small text-muted fw-medium">Nom de l'action</label>
+                          <input 
+                            type="text" 
+                            name="nom" 
+                            id="id_nom" 
+                            class="form-control" 
+                            placeholder="Ex: Rédiger le rapport financier..." 
+                            required
+                          >
+                        </div>
+                            
+                        <!-- Select pour le Statut -->
+                        <div class="col-md-3">
+                            <label for="id_statut" class="form-label small text-muted fw-medium">Statut initial</label>
+                            <select name="statut" id="id_statut" class="form-select">
+                                <!-- Les valeurs 'value' doivent correspondre aux clés stockées en Base de Données (Modèle corrigé) -->
+                                <option value="NON_REALISE" selected>Non réalisé</option>
+                                <option value="EN_COURS">En cours</option>
+                                <option value="REALISE">Réalisé</option>
+                            </select>
+                        </div>
+                            
+                        <!-- Bouton de Soumission -->
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100 fw-medium">
+                                Ajouter
+                            </button>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+            </div>
+            
+            
+
+        
+    {% endblock %}
